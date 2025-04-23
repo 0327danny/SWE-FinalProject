@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make a Reservation</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        /* Main Container */
+        .container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Form Styles */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input:focus, select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .form-toggle {
+            margin-top: 20px;
+        }
+
+        /* Error/Success Messages */
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .message.success {
+            background-color: #4caf50;
+            color: white;
+        }
+
+        .message.error {
+            background-color: #f44336;
+            color: white;
+        }
+
+        /* Back Button (blue) */
+        #back-button {
+            background-color: #007bff;
+        }
+
+        #back-button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Logout Button (red) */
+        #logout-button {
+            background-color: #f44336;
+        }
+
+        #logout-button:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Make a Reservation</h2>
+
+    <!-- Error/Success Message Area -->
+    <div id="message" class="message" style="display:none;"></div>
+
+    <!-- Reservation Form -->
+    <form id="reservation-form">
+        <label for="name">Your Name:</label>
+        <input type="text" id="name" name="name" placeholder="Your Full Name" required>
+
+        <label for="seats">Number of Seats:</label>
+        <input type="number" id="seats" name="seats" placeholder="Enter the number of seats" required min="1">
+
+        <label for="date">Reservation Date:</label>
+        <input type="date" id="date" name="date" required>
+
+        <label for="time">Reservation Time:</label>
+        <input type="time" id="time" name="time" required>
+
+        <button type="submit">Confirm Reservation</button>
+    </form>
+
+    <!-- Back to Dashboard Button -->
+    <button id="back-button" onclick="window.location.href='/home.html'">Back to Dashboard</button>
+
+    <!-- Logout Button -->
+    <button id="logout-button">Logout</button>
+</div>
+
+<script>
+    // Handle form submission
+    document.getElementById("reservation-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('name').value;
+        const seats = document.getElementById('seats').value;
+        const date = document.getElementById('date').value;
+        const time = document.getElementById('time').value;
+
+        // Simulate the reservation request (for demo purposes)
+        const reservationDetails = {
+            name,
+            seats,
+            date,
+            time
+        };
+
+        // Display reservation confirmation (this can be replaced with an API call to your server)
+        showMessage(`Reservation confirmed for ${name} - ${seats} seats on ${date} at ${time}.`, 'success');
+
+        // Optionally, you can send the reservation details to the server using fetch here.
+        // Example:
+        /*
+        fetch('/api/reservations/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+            },
+            body: JSON.stringify(reservationDetails)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage('Reservation confirmed!', 'success');
+            } else {
+                showMessage(data.message || 'Something went wrong!', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error processing the reservation. Please try again.', 'error');
+        });
+        */
+
+    });
+
+    // Logout button
+    document.getElementById("logout-button").addEventListener("click", function() {
+        localStorage.removeItem('authToken');
+        window.location.href = '/';  // Redirect to login page
+    });
+
+    // Function to display messages
+    function showMessage(message, type) {
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = message;
+        messageDiv.className = `message ${type}`;
+        messageDiv.style.display = 'block';
+    }
+
+</script>
+
+</body>
+</html>

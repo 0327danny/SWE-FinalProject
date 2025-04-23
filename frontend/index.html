@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jang's International Restaurant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Jang's International Restaurant</h1>
+        <nav>
+            <ul>
+                <li><a href="#menu">Menu</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="hero">
+        <h2>Welcome to Jang's International Restaurant</h2>
+        <p>The best food imaginable.</p>
+    </section>
+
+    <section id="menu">
+        <h2>Menu</h2>
+        <div class="menu-item">
+            <h3>Lasagna</h3>
+            <p>Uh. Really good lasagna. It has cheese in it. That makes it good.</p>
+            <span>$12.99</span>
+        </div>
+        <div class="menu-item">
+            <h3>Tuna</h3>
+            <p>I don't even like tuna so if ur ordering it I'm making sure you overpay.</p>
+            <span>$108.99</span>
+        </div>
+        <div class="menu-item">
+            <h3>Classic Cheeseburger</h3>
+            <p>Just sit back and enjoy the classics.</p>
+            <span>$10.99</span>
+        </div>
+    </section>
+
+    <section id="contact">
+        <h2>Contact Us</h2>
+        <form id="contact-form">
+            <input type="text" id="name" placeholder="Your Name" required>
+            <input type="email" id="email" placeholder="Your Email" required>
+            <textarea id="message" placeholder="Your Message" required></textarea>
+            <button type="submit">Send Message</button>
+
+        </form>
+    </section>
+
+    <footer>
+        <p> Phone Number: 610-741-1284 Email: Kogekoge@koge.koge Address: 6198 Koge St 18014 Allentown Pa.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Front Page</title>
+    <style>
+        .banner-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            margin: 20px;
+        }
+
+        .banner {
+            width: 300px;
+            height: 150px;
+            background-color: #ff9800;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            position: relative;
+        }
+
+        .banner h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .banner p {
+            font-size: 1.1em;
+        }
+
+        .banner .deal-image {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8em;
+            color: #ff9800;
+        }
+
+        .banner a {
+            display: block;
+            margin-top: 10px;
+            color: white;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to Our Restaurant</h1>
+    <div class="banner-container" id="banners-container">
+    </div>
+
+    <script>
+        // Function to fetch special deals from the backend
+        async function fetchSpecialDeals() {
+            try {
+                const response = await fetch('/api/deals');
+                if (response.ok) {
+                    const deals = await response.json();
+                    displayBanners(deals);
+                } else {
+                    console.error("Failed to fetch special deals.");
+                }
+            } catch (error) {
+                console.error('Error fetching deals:', error);
+            }
+        }
+
+        // Function to display special deals as banners
+        function displayBanners(deals) {
+            const container = document.getElementById('banners-container');
+            container.innerHTML = ''; // Clear existing banners if any
+
+            deals.forEach(deal => {
+                const banner = document.createElement('div');
+                banner.classList.add('banner');
+
+                const title = document.createElement('h3');
+                title.textContent = deal.title;
+                banner.appendChild(title);
+
+                const description = document.createElement('p');
+                description.textContent = deal.description;
+                banner.appendChild(description);
+
+                if (deal.imageUrl) {
+                    const image = document.createElement('img');
+                    image.src = deal.imageUrl;
+                    image.alt = 'Deal Image';
+                    image.classList.add('deal-image');
+                    banner.appendChild(image);
+                }
+
+                const moreInfoLink = document.createElement('a');
+                moreInfoLink.href = '#';
+                moreInfoLink.textContent = 'Learn More';
+                banner.appendChild(moreInfoLink);
+
+                container.appendChild(banner);
+            });
+        }
+
+        // Fetch and display deals on page load
+        fetchSpecialDeals();
+    </script>
+
+</body>
+</html>

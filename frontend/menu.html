@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .menu-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .menu-item strong {
+            font-size: 18px;
+            margin-right: 10px;
+        }
+
+        .menu-item span {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .back-button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Menu</h2>
+
+    <div id="menu-items-list">
+        <!-- Menu items will be populated here -->
+    </div>
+
+    <button class="back-button" onclick="window.location.href='/home.html'">Back to Dashboard</button>
+</div>
+
+<script>
+    // Fetch menu items when the page loads
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch('/api/inventory')
+            .then(response => response.json())
+            .then(data => {
+                const menuItemsList = document.getElementById('menu-items-list');
+                menuItemsList.innerHTML = ""; // Clear any existing items
+
+                // Display the menu items
+                data.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.classList.add('menu-item');
+                    itemDiv.innerHTML = `<strong>${item.name}</strong> - <span>$${item.price}</span>`;
+                    menuItemsList.appendChild(itemDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching menu items:', error);
+            });
+    });
+</script>
+
+</body>
+</html>

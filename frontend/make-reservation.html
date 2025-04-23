@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make a Reservation</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            border-radius: 8px;
+            width: 400px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        select, input, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+        }
+        .success-message {
+            color: green;
+            margin-bottom: 15px;
+        }
+        .tables-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .table-option {
+            background-color: #f0f0f0;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .table-option.selected {
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Make a Reservation</h1>
+
+        <!-- Display Error or Success Messages -->
+        <div id="message"></div>
+
+        <!-- Table Options -->
+        <div id="tables-container" class="tables-container">
+            <!-- Tables will be listed here dynamically -->
+        </div>
+
+        <!-- Reservation Details -->
+        <label for="reservation-date">Reservation Date:</label>
+        <input type="datetime-local" id="reservation-date" required>
+
+        <label for="num-guests">Number of Guests:</label>
+        <input type="number" id="num-guests" min="1" required>
+
+        <button id="submit-reservation">Submit Reservation</button>
+
+        <!-- Back Button -->
+        <button onclick="window.location.href='dashboard.html'">Back to Dashboard</button>
+    </div>
+
+    <script>
+        // Function to fetch available tables from the backend
+        async function fetchAvailableTables() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/index.html';  // Redirect to login if no token found
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:2000/api/reservations/tables', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Display available tables
+                    const tablesContainer = document.getElementById('tables-container');
+                    tablesContainer.innerHTML = ''; // Clear previous table options
+
+                    data.tables.forEach((table) => {
+                        const tableDiv = document.createElement('div');
+                        tableDiv.classList.add('table-option');
+                        tableDiv.textContent = `Table ${table.name}`;
+                        tableDiv.setAttribute('data-id', table._id);
+
+                        tableDiv.addEventListener('click', () => {
+                            // Select or unselect table
+                            if (tableDiv.classList.contains('selected')) {
+                                tableDiv.classList.remove('selected');
+                            } else {
+                                tableDiv.classList.add('selected');
+                            }
+                        });
+
+                        tablesContainer.appendChild(tableDiv);
+                    });
+                } else {
+                    throw new Error(data.message || 'Failed to fetch tables');
+                }
+            } catch (err) {
+                console.error(err);
+                showMessage('Error fetching tables. Please try again.', 'error');
+            }
+        }
+
+        // Function to show error or success messages
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = type === 'error' ? 'error-message' : 'success-message';
+        }
+
+        // Function to handle reservation submission
+        document.getElementById('submit-reservation').addEventListener('click', async () => {
+            const token = localStorage.getItem('token');
+            const selectedTable = document.querySelector('.table-option.selected');
+            const date = document.getElementById('reservation-date').value;
+            const guests = document.getElementById('num-guests').value;
+
+            if (!token) {
+                window.location.href = '/index.html';  // Redirect to login if no token
+                return;
+            }
+
+            if (!selectedTable || !date || !guests) {
+                showMessage('Please fill in all fields and select a table.', 'error');
+                return;
+            }
+
+            const tableId = selectedTable.getAttribute('data-id');
+            const reservationData = { tableId, date, guests };
+
+            try {
+                const response = await fetch('http://localhost:2000/api/reservations/create', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(reservationData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('Reservation made successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';  // Redirect to dashboard after success
+                    }, 2000);
+                } else {
+                    showMessage(data.message || 'Error making reservation. Please try again.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showMessage('Error submitting reservation. Please try again.', 'error');
+            }
+        });
+
+        // Call function to fetch tables when the page loads
+        fetchAvailableTables();
+    </script>
+
+</body>
+</html>

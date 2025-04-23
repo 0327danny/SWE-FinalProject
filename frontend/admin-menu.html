@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Menu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 80%;
+            max-width: 900px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #c82333;
+        }
+
+        .back-button {
+            background-color: #007bff;
+        }
+
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+
+        #message {
+            margin-top: 20px;
+            padding: 10px;
+            color: green;
+            background-color: #e0f7e0;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #error-message {
+            margin-top: 20px;
+            padding: 10px;
+            color: red;
+            background-color: #f8d7da;
+            border-radius: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Manage Menu Items</h2>
+    
+    <table id="menu-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Menu items will be dynamically loaded here -->
+        </tbody>
+    </table>
+
+    <button onclick="addMenuItem()">Add New Item</button>
+    <button class="back-button" onclick="window.location.href='/admin-dashboard.html'">Back to Dashboard</button>
+
+    <div id="message"></div>
+    <div id="error-message"></div>
+</div>
+
+<script>
+    // Function to fetch and load menu items from the server
+    function loadMenuItems() {
+        fetch('/api/menu')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('menu-table').querySelector('tbody');
+                tableBody.innerHTML = ''; // Clear existing rows
+
+                // Iterate through the data and create new rows
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>${item.description}</td>
+                        <td>$${parseFloat(item.price).toFixed(2)}</td>
+                        <td><button onclick="deleteMenuItem('${item._id}')">Delete</button></td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching menu items:', error);
+                displayErrorMessage('Error loading menu items.');
+            });
+    }
+
+    // Load menu items on page load
+    window.onload = function() {
+        loadMenuItems();
+    }
+
+    // Function to add a new menu item
+    function addMenuItem() {
+        const name = prompt('Enter item name');
+        const description = prompt('Enter item description');
+        const price = prompt('Enter item price (e.g. 9.99)');
+        
+        // Validate inputs
+        if (!name || !description || !price || isNaN(price)) {
+            displayErrorMessage('All fields are required and price must be a valid number.');
+            return;
+        }
+
+        // POST request to add the menu item to the server
+        fetch('/api/menu', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, description, price: parseFloat(price).toFixed(2) }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data._id) {
+                // If item is added successfully, update the table dynamically
+                const tableBody = document.getElementById('menu-table').querySelector('tbody');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${name}</td>
+                    <td>${description}</td>
+                    <td>$${parseFloat(price).toFixed(2)}</td>
+                    <td><button onclick="deleteMenuItem('${data._id}')">Delete</button></td>
+                `;
+                tableBody.appendChild(row);
+
+                displaySuccessMessage('Item added successfully.');
+            } else {
+                displayErrorMessage('Error adding item.');
+            }
+        })
+        .catch(error => {
+            console.error('Error adding menu item:', error);
+            displayErrorMessage('Error adding item.');
+        });
+    }
+
+    // Function to delete a menu item
+    function deleteMenuItem(id) {
+        fetch(`/api/menu/${id}`, {
+            method: 'DELETE',
+        })
+        .then(response => response.json())
+        .then(() => {
+            alert('Item deleted successfully');
+            loadMenuItems();  // Reload the menu items to reflect the deletion
+        })
+        .catch(error => {
+            console.error('Error deleting menu item:', error);
+            alert('Error deleting menu item');
+        });
+    }
+
+    // Function to display success message
+    function displaySuccessMessage(message) {
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = message;
+        messageDiv.style.display = 'block';
+        setTimeout(() => {
+            messageDiv.style.display = 'none';
+        }, 3000);
+    }
+
+    // Function to display error message
+    function displayErrorMessage(message) {
+        const errorMessageDiv = document.getElementById('error-message');
+        errorMessageDiv.textContent = message;
+        errorMessageDiv.style.display = 'block';
+        setTimeout(() => {
+            errorMessageDiv.style.display = 'none';
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>
